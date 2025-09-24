@@ -15,7 +15,13 @@ export const SubmitButton = ({ className, size, text }: SubmitButtonProps) => {
   const { pending } = useFormStatus();
   return (
     <Button disabled={pending} type="submit" className={className} size={size}>
-      {pending ? <Loader className="animate-spin" /> : text}
+      {pending ? (
+        <>
+          <Loader className="animate-spin" /> <span>Please wait...</span>
+        </>
+      ) : (
+        text
+      )}
     </Button>
   );
 };

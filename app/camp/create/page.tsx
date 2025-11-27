@@ -7,6 +7,9 @@ import { currentUser } from "@clerk/nextjs/server";
 import CategoryInput from "@/components/form/CategoryInput";
 import TextAreaInput from "@/components/form/TextAreaInput";
 import ProvinceInput from "@/components/form/ProvinceInput";
+import MapLandmark from "@/components/map/MapLandmarkDynamic";
+import ImageInput from "@/components/form/ImageInput";
+
 
 const CreatePage = () => {
   return (
@@ -29,13 +32,16 @@ const CreatePage = () => {
 
           <div className="grid grid-cols-2 gap-4">
             <FormInput
-              name="Price"
+              name="price"
               label=" Price"
               placeholder="Price"
               type="number"
             />
             <ProvinceInput />
           </div>
+          <ImageInput />
+
+          <MapLandmark location={{ lat: 14, lng: 100.5 }} />
 
           <SubmitButton text="Create Landmark" size="sm" className="mx-auto" />
         </div>

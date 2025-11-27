@@ -1,8 +1,14 @@
 "use server";
-import { profileSchema, ValidateWithZod } from "@/utils/schemas";
+import {
+  imageSchema,
+  landmarkSchema,
+  profileSchema,
+  ValidateWithZod,
+} from "@/utils/schemas";
 import { clerkClient, currentUser } from "@clerk/nextjs/server";
 import db from "@/utils/db";
 import { redirect } from "next/navigation";
+import { uploadFile } from "@/utils/supabase";
 
 const getAuthUser = async () => {
   const user = await currentUser();
@@ -60,7 +66,6 @@ export const createProfileAction = async (
   try {
     const user = await currentUser();
     if (!user) throw new Error("Please Login!!!");
-
     const rawData = Object.fromEntries(formData);
     const validateField = ValidateWithZod(profileSchema, rawData);
     // console.log("validated", validateField);
@@ -92,17 +97,32 @@ export const createLandmarkAction = async (
   formData: FormData
 ): Promise<{ message: string }> => {
   try {
-    const user = await currentUser();
-    if (!user) throw new Error("Please Login!!!");
-
+    const user = await getAuthUser();
     const rawData = Object.fromEntries(formData);
-    // const validateField = ValidateWithZod(profileSchema, rawData);
-    console.log("validated", rawData);
+    const file = formData.get("image") as File;
 
-    return { message: "Create Landmark Success!!!" };
+
+    //step1 ValidateData
+    const validateFile = ValidateWithZod(imageSchema, { image: file });
+    const validateField = ValidateWithZod(landmarkSchema, rawData);
+
+    //step2 Upload Image to Supabase
+    const fullPath = await uploadFile(validateFile.image);
+    console.log(fullPath);
+    
+    //step3 Insert to DB
+    await db.landmark.create({
+      data: {
+        ...validateField,
+        image: fullPath,
+        profileId: user.id,
+      }
+    })
+
+    // return { message: "Create Landmark Success!!!" };
   } catch (error) {
     // console.log(error);
     return renderError(error);
   }
-  // redirect("/");
+  redirect("/");
 };
